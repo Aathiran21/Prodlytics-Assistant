@@ -70,12 +70,15 @@ elif st.session_state.step == 2:
 
     st.bar_chart(summary[["DAU", "MAU", "Churn"]].T)
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.download_button("⬇️ Download This Report", data=summary.to_csv(index=False), file_name="monthly_kpi_report.csv")
-    with col2:
-        if st.button("⬅️ Back to Home"):
-            st.session_state.step = 0
+   col1, col2, col3 = st.columns(3)
+with col1:
+    st.download_button("⬇️ Download This Report", data=summary.to_csv(index=False), file_name="monthly_kpi_report.csv")
+with col2:
+    if st.button("🔁 Log Another Month"):
+        st.session_state.step = 1
+with col3:
+    if st.button("⬅️ Back to Home"):
+        st.session_state.step = 0
 
 # ---------- STEP 5: REPORT OPTIONS ----------
 elif st.session_state.step == 5:
