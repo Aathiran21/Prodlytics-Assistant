@@ -121,12 +121,12 @@ elif st.session_state.step == 6:
         df = df.sort_values("Date", ascending=True).tail(st.session_state.report_range)
 
         st.write(df[["Month", "Year", "DAU", "MAU", "Churn", "Insights"]])
-       import matplotlib.pyplot as plt
 
-# Plot using custom colors
+        import matplotlib.pyplot as plt  # <- fixed position
+
+        # Plot using custom colors
         fig, ax = plt.subplots(figsize=(10, 4))
         df_plot = df.set_index("Date")[["DAU", "MAU", "Churn"]]
-    
         df_plot.plot(kind='bar', ax=ax, color=["blue", "purple", "orange"])
         ax.set_title(f"KPI Trends – Last {st.session_state.report_range} Months")
         ax.set_ylabel("Values")
