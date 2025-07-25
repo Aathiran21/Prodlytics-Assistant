@@ -5,7 +5,7 @@ from datetime import datetime
 
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Prod-Pop!", page_icon="✨")
-st.markdown("<h1 style='text-align: center;'>📊 Prod-Pop!</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>✨ Prod-Pop!</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: grey;'>Hi, I'm Clarity – your assistant to help log KPIs and generate reports with clarity and ease.</p>", unsafe_allow_html=True)
 
 DATA_FILE = "kpi_data.csv"
@@ -53,19 +53,22 @@ elif st.session_state.step == 1:
     Churn = st.number_input("📉 Churn Rate (%)", min_value=0.0)
     Insights = st.text_area("🧠 Monthly Insights", placeholder="What was this month like?")
 
-        if st.button("💾 Save Data"):
+    if st.button("💾 Save Data"):
         save_data(month, year, DAU, MAU, Churn, Insights)
         st.success(f"✅ Saved data for {month} {year}")
         st.session_state.last_saved_month = month
         st.session_state.last_saved_year = year
+        st.session_state.step = "saved"  # Temporary step to show buttons
 
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("📄 View This Report"):
-                st.session_state.step = 2
-        with col2:
-            if st.button("⬅️ Back to Home"):
-                st.session_state.step = 0
+elif st.session_state.step == "saved":
+    st.markdown("### ✅ Data saved. What would you like to do next?")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("📄 View This Report"):
+            st.session_state.step = 2
+    with col2:
+        if st.button("⬅️ Back to Home"):
+            st.session_state.step = 0
 
 # ---------- STEP 2: SHOW REPORT FOR SAVED MONTH ----------
 elif st.session_state.step == 2:
