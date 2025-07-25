@@ -143,22 +143,24 @@ elif st.session_state.step == 7:
 
         if len(df) == 0:
             st.info("📭 No data available to delete.")
+            if st.button("⬅️ Back to Home"):
+                st.session_state.step = 0
         else:
             df["Label"] = df["Month"] + " " + df["Year"].astype(str)
             selected_label = st.selectbox("📅 Select entry to delete", df["Label"].tolist())
 
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("❌ Delete Selected Entry"):
-                    df = df[df["Label"] != selected_label]
-                    df.drop(columns=["Label"], inplace=True)
-                    df.to_csv(DATA_FILE, index=False)
-                    st.success(f"✅ Deleted data for {selected_label}")
-                    st.session_state.step = 0
-            with col2:
-                if st.button("⬅️ Back to Home"):
-                    st.session_state.step = 0
+            if st.button("❌ Delete Selected Entry"):
+                df = df[df["Label"] != selected_label]
+                df.drop(columns=["Label"], inplace=True)
+                df.to_csv(DATA_FILE, index=False)
+                st.success(f"✅ Deleted data for {selected_label}")
+
+            # Show back button regardless of delete status
+            if st.button("⬅️ Back to Home"):
+                st.session_state.step = 0
     else:
         st.warning("⚠️ No data file found. Nothing to delete.")
         if st.button("⬅️ Back to Home"):
+            st.session_state.step = 0
+
             st.session_state.step = 0
