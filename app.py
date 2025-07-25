@@ -121,7 +121,18 @@ elif st.session_state.step == 6:
         df = df.sort_values("Date", ascending=True).tail(st.session_state.report_range)
 
         st.write(df[["Month", "Year", "DAU", "MAU", "Churn", "Insights"]])
-        st.bar_chart(df.set_index("Date")[["DAU", "MAU", "Churn"]])
+       import matplotlib.pyplot as plt
+
+# Plot using custom colors
+        fig, ax = plt.subplots(figsize=(10, 4))
+        df_plot = df.set_index("Date")[["DAU", "MAU", "Churn"]]
+    
+        df_plot.plot(kind='bar', ax=ax, color=["blue", "purple", "orange"])
+        ax.set_title(f"KPI Trends – Last {st.session_state.report_range} Months")
+        ax.set_ylabel("Values")
+        ax.set_xlabel("Date")
+        plt.xticks(rotation=45)
+        st.pyplot(fig)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -161,6 +172,4 @@ elif st.session_state.step == 7:
     else:
         st.warning("⚠️ No data file found. Nothing to delete.")
         if st.button("⬅️ Back to Home"):
-            st.session_state.step = 0
-
             st.session_state.step = 0
