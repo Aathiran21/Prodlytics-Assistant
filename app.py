@@ -6,7 +6,7 @@ from datetime import datetime
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Prod-Pop!", page_icon="✨")
 st.markdown("<h1 style='text-align: center;'>📊 Prod-Pop!</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: grey;'>Track KPIs monthly, view trends, and download reports easily.</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: grey;'>Hi, I'm Clarity – your assistant to help log KPIs and generate reports with clarity and ease.</p>", unsafe_allow_html=True)
 
 DATA_FILE = "kpi_data.csv"
 
@@ -14,9 +14,8 @@ DATA_FILE = "kpi_data.csv"
 if "step" not in st.session_state:
     st.session_state.step = 0
     st.session_state.kpi_data = {}
-    st.session_state.insights = ""
 
-# ---------- FUNCTION: SAVE DATA ----------
+# ---------- SAVE FUNCTION ----------
 def save_data(Month, Year, DAU, MAU, Churn, Insights):
     new_row = {
         "Month": Month,
@@ -35,75 +34,84 @@ def save_data(Month, Year, DAU, MAU, Churn, Insights):
 
 # ---------- STEP 0: WELCOME ----------
 if st.session_state.step == 0:
-    st.success("👋 Welcome to Prod-Pop! 👩‍💻 I am Clarity  your assistant and I am here to help you log KPIs and generate insights monthly.")
-    if st.button("Start Logging"):
-        st.session_state.step += 1
+    st.markdown("### What would you like to do?")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("📝 Log New Month Data"):
+            st.session_state.step = 1
+    with col2:
+        if st.button("📊 View Reports"):
+            st.session_state.step = 5
 
-# ---------- STEP 1: INPUT ----------
+# ---------- STEP 1: INPUT DATA ----------
 elif st.session_state.step == 1:
     st.subheader("📥 Enter Monthly KPIs")
+    month = st.selectbox("📆 Select Month", [datetime(2000, m, 1).strftime('%B') for m in range(1, 13)])
+    year = st.number_input("📅 Enter Year", min_value=2000, max_value=datetime.now().year, value=datetime.now().year)
     DAU = st.number_input("👥 DAU (Daily Active Users)", min_value=0)
     MAU = st.number_input("👥 MAU (Monthly Active Users)", min_value=0)
     Churn = st.number_input("📉 Churn Rate (%)", min_value=0.0)
     Insights = st.text_area("🧠 Monthly Insights", placeholder="What was this month like?")
 
+    if st.button("💾 Save Data"):
+        save_data(month, year, DAU, MAU, Churn, Insights)
+        st.success(f"✅ Saved data for {month} {year}")
+        st.session_state.last_saved_month = month
+        st.session_state.last_saved_year = year
+        st.session_state.step = 2
+
+# ---------- STEP 2: SHOW REPORT FOR SAVED MONTH ----------
+elif st.session_state.step == 2:
+    st.subheader(f"📄 Report for {st.session_state.last_saved_month} {st.session_state.last_saved_year}")
+    df = pd.read_csv(DATA_FILE)
+    summary = df[(df["Month"] == st.session_state.last_saved_month) & (df["Year"] == st.session_state.last_saved_year)]
+    st.write(summary[["DAU", "MAU", "Churn"]])
+    st.info(summary["Insights"].values[0] if summary["Insights"].values[0] else "_No insights provided._")
+
+    st.bar_chart(summary[["DAU", "MAU", "Churn"]].T)
+
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("⬅️ Back"):
-            st.session_state.step = 0
+        st.download_button("⬇️ Download This Report", data=summary.to_csv(index=False), file_name="monthly_kpi_report.csv")
     with col2:
-        if st.button("💾 Save This Month’s Data"):
-            now = datetime.now()
-            Month = now.strftime("%B")
-            Year = now.year
-            save_data(Month, Year, DAU, MAU, Churn, Insights)
-            st.success(f"✅ Saved data for {Month} {Year}")
-            st.session_state.step += 1
+        if st.button("⬅️ Back to Home"):
+            st.session_state.step = 0
 
-# ---------- STEP 2: VIEW REPORTS ----------
-elif st.session_state.step == 2:
-    st.subheader("📊 View KPI Reports")
+# ---------- STEP 5: REPORT OPTIONS ----------
+elif st.session_state.step == 5:
+    st.subheader("📊 Choose Report Range")
+    col1, col2, col3 = st.columns(3)
+    if col1.button("📅 Past 3 Months"):
+        st.session_state.report_range = 3
+        st.session_state.step = 6
+    if col2.button("📅 Past 6 Months"):
+        st.session_state.report_range = 6
+        st.session_state.step = 6
+    if col3.button("📅 Past 12 Months"):
+        st.session_state.report_range = 12
+        st.session_state.step = 6
+    if st.button("⬅️ Back to Home"):
+        st.session_state.step = 0
+
+# ---------- STEP 6: GENERATE PERIOD REPORT ----------
+elif st.session_state.step == 6:
+    st.subheader(f"📈 KPI Trends – Last {st.session_state.report_range} Months")
 
     if os.path.exists(DATA_FILE):
         df = pd.read_csv(DATA_FILE)
+        df["Date"] = pd.to_datetime(df["Month"] + " " + df["Year"].astype(str))
+        df = df.sort_values("Date", ascending=True).tail(st.session_state.report_range)
+
+        st.write(df[["Month", "Year", "DAU", "MAU", "Churn", "Insights"]])
+        st.bar_chart(df.set_index("Date")[["DAU", "MAU", "Churn"]])
 
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("📅 View This Month’s Summary"):
-                now = datetime.now()
-                Month = now.strftime("%B")
-                Year = now.year
-                current = df[(df["Month"] == Month) & (df["Year"] == Year)]
-                if not current.empty:
-                    st.write(f"📅 **{Month} {Year} Summary**")
-                    st.write(current[["DAU", "MAU", "Churn"]])
-                    st.markdown("📝 **Insights:**")
-                    st.info(current["Insights"].values[0] if current["Insights"].values[0] else "_No insights provided._")
-                else:
-                    st.warning("⚠️ No data found for this month.")
-
+            st.download_button("⬇️ Download Report", data=df.to_csv(index=False), file_name=f"kpi_report_last_{st.session_state.report_range}_months.csv")
         with col2:
-            if st.button("📈 View Last 12 Months Summary"):
-                df["Date"] = pd.to_datetime(df["Month"] + " " + df["Year"].astype(str))
-                df = df.sort_values("Date", ascending=True).tail(12)
-                st.write("📅 **KPI Trends – Last 12 Months**")
-                st.bar_chart(df.set_index("Date")[["DAU", "MAU", "Churn"]])
-
-        # Download and Clear Buttons
-        st.markdown("---")
-        col3, col4, col5 = st.columns(3)
-        with col3:
-            if st.download_button("⬇️ Download Report", data=df.to_csv(index=False), file_name="kpi_report.csv"):
-                st.success("📥 Report downloaded!")
-        with col4:
-            if st.button("🗑️ Clear All Data"):
-                os.remove(DATA_FILE)
-                st.warning("🚨 All KPI data cleared.")
-                st.session_state.step = 0
-        with col5:
-            if st.button("⬅️ Back"):
-                st.session_state.step = 1
+            if st.button("⬅️ Back to Reports"):
+                st.session_state.step = 5
     else:
-        st.warning("No data available. Please log KPIs first.")
-        if st.button("⬅️ Back"):
-            st.session_state.step = 1
+        st.warning("⚠️ No KPI data found. Please log some data first.")
+        if st.button("⬅️ Back to Home"):
+            st.session_state.step = 0
