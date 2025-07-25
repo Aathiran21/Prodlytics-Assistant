@@ -5,7 +5,7 @@ from datetime import datetime
 
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Prod-Pop!", page_icon="✨")
-st.markdown("<h1 style='text-align: center;'>📊 Prod-lytics Assistant</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>📊 Prod-Pop!</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: grey;'>Track KPIs monthly, view trends, and download reports easily.</p>", unsafe_allow_html=True)
 
 DATA_FILE = "kpi_data.csv"
