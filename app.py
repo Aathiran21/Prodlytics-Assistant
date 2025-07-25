@@ -53,12 +53,19 @@ elif st.session_state.step == 1:
     Churn = st.number_input("📉 Churn Rate (%)", min_value=0.0)
     Insights = st.text_area("🧠 Monthly Insights", placeholder="What was this month like?")
 
-    if st.button("💾 Save Data"):
+        if st.button("💾 Save Data"):
         save_data(month, year, DAU, MAU, Churn, Insights)
         st.success(f"✅ Saved data for {month} {year}")
         st.session_state.last_saved_month = month
         st.session_state.last_saved_year = year
-        st.session_state.step = 2
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("📄 View This Report"):
+                st.session_state.step = 2
+        with col2:
+            if st.button("⬅️ Back to Home"):
+                st.session_state.step = 0
 
 # ---------- STEP 2: SHOW REPORT FOR SAVED MONTH ----------
 elif st.session_state.step == 2:
