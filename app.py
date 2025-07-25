@@ -6,7 +6,7 @@ from datetime import datetime
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Prod-Pop!", page_icon="✨")
 st.markdown("<h1 style='text-align: center;'>✨ Prod-Pop!</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: grey;'>Hi, I'm Clarity – your assistant to help log KPIs and generate reports with clarity and ease.</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: grey;'>Hey there! Welcome to Prod-Pop! with Clarity. I'm Clarity – your assistant and I'm here to help you log KPIs and generate summary reports with ease.</p>", unsafe_allow_html=True)
 
 DATA_FILE = "kpi_data.csv"
 
@@ -35,13 +35,17 @@ def save_data(Month, Year, DAU, MAU, Churn, Insights):
 # ---------- STEP 0: WELCOME ----------
 if st.session_state.step == 0:
     st.markdown("### What would you like to do?")
-    col1, col2 = st.columns(2)
+    
+    col1, col2, col3 = st.columns(3)
     with col1:
         if st.button("📝 Log New Month Data"):
             st.session_state.step = 1
     with col2:
         if st.button("📊 View Reports"):
             st.session_state.step = 5
+    with col3:
+        if st.button("🗑️ Delete Specific Month Data"):
+            st.session_state.step = 7
 
 # ---------- STEP 1: INPUT DATA ----------
 elif st.session_state.step == 1:
@@ -58,8 +62,9 @@ elif st.session_state.step == 1:
         st.success(f"✅ Saved data for {month} {year}")
         st.session_state.last_saved_month = month
         st.session_state.last_saved_year = year
-        st.session_state.step = "saved"  # Temporary step to show buttons
+        st.session_state.step = "saved"
 
+# ---------- STEP 1.5: POST SAVE OPTIONS ----------
 elif st.session_state.step == "saved":
     st.markdown("### ✅ Data saved. What would you like to do next?")
     col1, col2 = st.columns(2)
@@ -89,7 +94,6 @@ elif st.session_state.step == 2:
     with col3:
         if st.button("⬅️ Back to Home"):
             st.session_state.step = 0
-
 
 # ---------- STEP 5: REPORT OPTIONS ----------
 elif st.session_state.step == 5:
@@ -127,5 +131,34 @@ elif st.session_state.step == 6:
                 st.session_state.step = 5
     else:
         st.warning("⚠️ No KPI data found. Please log some data first.")
+        if st.button("⬅️ Back to Home"):
+            st.session_state.step = 0
+
+# ---------- STEP 7: DELETE A SPECIFIC MONTH ----------
+elif st.session_state.step == 7:
+    st.subheader("🗑️ Delete a Specific Month’s KPI Data")
+
+    if os.path.exists(DATA_FILE):
+        df = pd.read_csv(DATA_FILE)
+
+        if len(df) == 0:
+            st.info("📭 No data available to delete.")
+        else:
+            df["Label"] = df["Month"] + " " + df["Year"].astype(str)
+            selected_label = st.selectbox("📅 Select entry to delete", df["Label"].tolist())
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("❌ Delete Selected Entry"):
+                    df = df[df["Label"] != selected_label]
+                    df.drop(columns=["Label"], inplace=True)
+                    df.to_csv(DATA_FILE, index=False)
+                    st.success(f"✅ Deleted data for {selected_label}")
+                    st.session_state.step = 0
+            with col2:
+                if st.button("⬅️ Back to Home"):
+                    st.session_state.step = 0
+    else:
+        st.warning("⚠️ No data file found. Nothing to delete.")
         if st.button("⬅️ Back to Home"):
             st.session_state.step = 0
