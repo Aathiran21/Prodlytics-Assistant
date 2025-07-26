@@ -148,7 +148,7 @@ elif st.session_state.step == 5:
 
 # ---------- STEP 6: GENERATE PERIOD REPORT ----------
 elif st.session_state.step == 6:
-    st.subheader(f"📈 KPI Trends – Last {st.session_state.report_range} Months")
+    st.subheader(f"KPI Trends – Last {st.session_state.report_range} Months")
 
     if os.path.exists(DATA_FILE):
         import matplotlib.pyplot as plt
@@ -167,14 +167,14 @@ elif st.session_state.step == 6:
 
         if st.session_state.report_range == 3:
             df_plot.plot(kind="bar", ax=ax, color=["blue", "orange", "purple"], width=0.6)
-            ax.set_title("📊 KPI Trends – Last 3 Months")
+            ax.set_title("KPI Trends – Last 3 Months")
 
             # Add bar labels
             for container in ax.containers:
                 ax.bar_label(container, fontsize=8, label_type='edge', padding=3)
         else:
             df_plot.plot(kind="line", ax=ax, marker='o', color=["blue", "orange", "purple"])
-            ax.set_title(f"📈 KPI Trends – Last {st.session_state.report_range} Months")
+            ax.set_title(f"KPI Trends – Last {st.session_state.report_range} Months")
 
             # Add point labels
             for line in ax.get_lines():
