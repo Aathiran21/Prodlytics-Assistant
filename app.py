@@ -85,12 +85,12 @@ if st.session_state.step == 0:
         <h1 style='text-align: center; color: mediumslateblue;'>✨ Welcome to Prod POP! ✨</h1>
 
         <p style='text-align: center; font-size: 16px; color: deeppink;'>
-        Hey there! I’m <strong>Clarity</strong>, your friendly prod-lytics assistant.<br>
-        Together, we’ll track your KPIs, uncover insights, and bring clarity to your product’s growth journey – one month at a time. 📈
+        👋🏼 Hey there! I’m <strong>Clarity</strong>, your prod-lytics catistant🐈.<br>
+        Together, we’ll track your KPIs, uncover insights, and bring clarity to your product’s growth journey – one month at a time.
         </p>
 
         <p style='text-align: center; font-size: 15px; color: orange;'>
-        Log. Analyze. Evolve. Let’s make your product shine!
+        Log. Analyze. Evolve. Purr-fect tracking of Growth😻!
         </p>
     """, unsafe_allow_html=True)
 
