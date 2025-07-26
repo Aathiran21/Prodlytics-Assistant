@@ -64,9 +64,9 @@ def save_data(Month, Year, DAU, MAU, Avg_MRR_Per_Person, Insights):
 # ---------- STEP 0: WELCOME ----------
 if st.session_state.step == 0:
     st.markdown("""
-        <h1 style='text-align: center; color: purple;'>✨ Welcome to Prod POP! ✨</h1>
+        <h1 style='text-align: center; color: mediumslateblue;'>✨ Welcome to Prod POP! ✨</h1>
 
-        <p style='text-align: center; font-size: 16px; color: pink;'>
+        <p style='text-align: center; font-size: 16px; color: deeppink;'>
         Hi there! I’m <strong>Clarity</strong>, your friendly product analytics assistant.<br>
         Together, we’ll track your KPIs, uncover insights, and bring clarity to your product’s growth journey – one month at a time. 📈
         </p>
