@@ -152,7 +152,6 @@ elif st.session_state.step == 6:
 
     if os.path.exists(DATA_FILE):
         import matplotlib.pyplot as plt
-        import matplotlib.dates as mdates
 
         df = pd.read_csv(DATA_FILE)
         df["Date"] = pd.to_datetime(df["Year"].astype(str) + "-" + df["Month"] + "-01", format="%Y-%B-%d")
@@ -160,7 +159,8 @@ elif st.session_state.step == 6:
 
         st.write(df[["Month", "Year", "DAU", "MAU", "Churn", "Insights"]])
 
-        df["MonthYearStr"] = df["Date"].dt.strftime('%b %Y')  # e.g., Jan 2025
+        # Format x-axis as "Jan 2025"
+        df["MonthYearStr"] = df["Date"].dt.strftime('%b %Y')
         df_plot = df.set_index("MonthYearStr")[["DAU", "MAU", "Churn"]]
 
         fig, ax = plt.subplots(figsize=(10, 5))
@@ -172,7 +172,6 @@ elif st.session_state.step == 6:
             # Add bar labels
             for container in ax.containers:
                 ax.bar_label(container, fontsize=8, label_type='edge', padding=3)
-
         else:
             df_plot.plot(kind="line", ax=ax, marker='o', color=["blue", "orange", "purple"])
             ax.set_title(f"📈 KPI Trends – Last {st.session_state.report_range} Months")
@@ -184,13 +183,13 @@ elif st.session_state.step == 6:
                                 ha='center', fontsize=8)
 
         ax.set_ylabel("Values")
-        ax.set_xlabel("Date")
+        ax.set_xlabel("Month")
         ax.legend(title="Metrics")
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))  # Format like Jan 2025
         plt.xticks(rotation=45)
         plt.tight_layout()
         st.pyplot(fig)
 
+        # Buttons
         col1, col2, col3 = st.columns(3)
 
         with col1:
@@ -218,6 +217,7 @@ elif st.session_state.step == 6:
         st.warning("⚠️ No KPI data found. Please log some data first.")
         if st.button("⬅️ Back to Home"):
             st.session_state.step = 0
+
 
 # ---------- STEP 7: DELETE A SPECIFIC MONTH ----------
 elif st.session_state.step == 7:
