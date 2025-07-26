@@ -176,28 +176,32 @@ elif st.session_state.step == 6:
         st.pyplot(fig)
 
         # ✅ Aligned buttons in one row
-        col1, col2, col3 = st.columns([1, 1, 1])
+      # ---------- Button Row with Aligned Layout ----------
+col1, col2, col3 = st.columns(3)
 
-        with col1:
-            st.download_button(
-                "⬇️ Download CSV",
-                data=df.to_csv(index=False),
-                file_name=f"kpi_report_last_{st.session_state.report_range}_months.csv",
-                mime="text/csv"
-            )
+with col1:
+    with st.container():
+        st.download_button(
+            "⬇️ Download CSV",
+            data=df.to_csv(index=False),
+            file_name=f"kpi_report_last_{st.session_state.report_range}_months.csv",
+            mime="text/csv"
+        )
 
-        with col2:
-            pdf_file = generate_pdf(df, fig, title=f"KPI Report – Last {st.session_state.report_range} Months")
-            st.download_button(
-                label="⬇️ Download PDF",
-                data=pdf_file,
-                file_name=f"kpi_report_last_{st.session_state.report_range}_months.pdf",
-                mime="application/pdf"
-            )
+with col2:
+    with st.container():
+        pdf_file = generate_pdf(df, fig, title=f"KPI Report – Last {st.session_state.report_range} Months")
+        st.download_button(
+            label="⬇️ Download PDF",
+            data=pdf_file,
+            file_name=f"kpi_report_last_{st.session_state.report_range}_months.pdf",
+            mime="application/pdf"
+        )
 
-        with col3:
-            if st.button("⬅️ Back to Reports"):
-                st.session_state.step = 5
+with col3:
+    with st.container():
+        if st.button("⬅️ Back to Reports"):
+            st.session_state.step = 5
 
     else:
         st.warning("⚠️ No KPI data found. Please log some data first.")
