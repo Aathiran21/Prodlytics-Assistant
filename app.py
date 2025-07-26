@@ -34,7 +34,17 @@ def generate_pdf(df, fig, title="KPI Report"):
     elements.append(Spacer(1, 0.1 * inch))
 
     # 📑 Prepare table data
-    table_data = [df.columns.tolist()] + df.astype(str).values.tolist()
+    from reportlab.lib.styles import ParagraphStyle
+
+# Use a small paragraph style for table cells
+para_style = ParagraphStyle(name='TableCell', fontSize=8, leading=10)
+
+# Wrap all cells as Paragraphs to enable text wrapping
+table_data = [df.columns.tolist()]
+for row in df.astype(str).values.tolist():
+    wrapped_row = [Paragraph(cell, para_style) for cell in row]
+    table_data.append(wrapped_row)
+
 
     # 📏 Auto-adjust column widths
     usable_width = A4[0] - 2 * inch
