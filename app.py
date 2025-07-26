@@ -17,6 +17,14 @@ def generate_pdf(df, fig, title="KPI Report"):
     # 🔥 Remove any column containing "churn" (case-insensitive)
     df = df[[col for col in df.columns if "churn" not in col.lower()]]
 
+    # ❌ Drop 'MonthYearStr' if it exists
+    if "MonthYearStr" in df.columns:
+        df = df.drop(columns=["MonthYearStr"])
+
+    # ✅ Reorder columns
+    expected_columns = ["Date", "Month", "Year", "DAU", "MAU", "Avg_MRR_Per_Person", "Insights"]
+    df = df[[col for col in expected_columns if col in df.columns]]
+
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     styles = getSampleStyleSheet()
@@ -32,22 +40,22 @@ def generate_pdf(df, fig, title="KPI Report"):
     elements.append(RLImage(img_buffer, width=6 * inch, height=3 * inch))
     elements.append(Spacer(1, 0.5 * inch))
 
-    # 📋 Add table heading
+    # 📋 Table heading
     elements.append(Paragraph("<b>Data Table</b>", styles['Heading2']))
     elements.append(Spacer(1, 0.1 * inch))
 
-    # 📑 Prepare table data
+    # 🧾 Table style and wrap
     para_style = ParagraphStyle(name='TableCell', fontSize=8, leading=10)
 
-    # Header row
+    # Header
     table_data = [[Paragraph(str(cell), para_style) for cell in df.columns.tolist()]]
 
-    # Data rows with wrapped text
+    # Rows
     for row in df.astype(str).values.tolist():
         wrapped_row = [Paragraph(cell, para_style) for cell in row]
         table_data.append(wrapped_row)
 
-    # 📏 Auto-adjust column widths
+    # 📏 Dynamic widths
     usable_width = A4[0] - 2 * inch
     col_widths = []
     for col in df.columns:
@@ -63,7 +71,7 @@ def generate_pdf(df, fig, title="KPI Report"):
     auto_width = (usable_width - fixed) / remaining_cols if remaining_cols > 0 else 1
     col_widths = [w if w is not None else auto_width for w in col_widths]
 
-    # 🧾 Build the table
+    # 📄 Build the table
     report_table = Table(table_data, colWidths=col_widths, hAlign='LEFT')
     report_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
