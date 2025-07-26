@@ -64,19 +64,22 @@ def save_data(Month, Year, DAU, MAU, Avg_MRR_Per_Person, Insights):
 # ---------- STEP 0: WELCOME ----------
 if st.session_state.step == 0:
     st.markdown("<h1 style='text-align: center;'>✨ Prod-Pop!</h1>", unsafe_allow_html=True)
-    st.markdown("<h1 style='text-align: center;'>✨ Welcome to Prod POP! ✨</h1>
 
-<p style='text-align: center; font-size: 16px;'>
-Hi there! I’m <strong>Clarity</strong>, your friendly product analytics assistant.<br>
-Together, we’ll track your KPIs, uncover insights, and bring clarity to your product’s growth journey – one month at a time. 📈
-</p>
+    st.markdown("""
+        <h1 style='text-align: center;'>✨ Welcome to Prod POP! ✨</h1>
 
-<p style='text-align: center; font-size: 15px; color: orange;'>
-Log. Analyze. Evolve. Let’s make your product shine!
-</p>
-", unsafe_allow_html=True)
-    
+        <p style='text-align: center; font-size: 16px;'>
+        Hi there! I’m <strong>Clarity</strong>, your friendly product analytics assistant.<br>
+        Together, we’ll track your KPIs, uncover insights, and bring clarity to your product’s growth journey – one month at a time. 📈
+        </p>
+
+        <p style='text-align: center; font-size: 15px; color: orange;'>
+        Log. Analyze. Evolve. Let’s make your product shine!
+        </p>
+    """, unsafe_allow_html=True)
+
     st.markdown("### What would you like to do?")
+
     
     col1, col2, col3 = st.columns(3)
     with col1:
