@@ -5,9 +5,6 @@ from datetime import datetime
 
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Prod-Pop!", page_icon="✨")
-st.markdown("<h1 style='text-align: center;'>✨ Prod-Pop!</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: grey;'>Hey there! Welcome to Prod-Pop! with Clarity. I'm Clarity – your assistant and I'm here to help you log KPIs and generate summary reports with ease.</p>", unsafe_allow_html=True)
-
 DATA_FILE = "kpi_data.csv"
 
 # ---------- INIT ----------
@@ -34,6 +31,9 @@ def save_data(Month, Year, DAU, MAU, Churn, Insights):
 
 # ---------- STEP 0: WELCOME ----------
 if st.session_state.step == 0:
+    st.markdown("<h1 style='text-align: center;'>✨ Prod-Pop!</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: orange;'>Hey there! Welcome to Prod-Pop! with Clarity. I'm Clarity – your assistant and I'm here to help you log KPIs and generate summary reports with ease.</p>", unsafe_allow_html=True)
+    
     st.markdown("### What would you like to do?")
     
     col1, col2, col3 = st.columns(3)
@@ -63,6 +63,9 @@ elif st.session_state.step == 1:
         st.session_state.last_saved_month = month
         st.session_state.last_saved_year = year
         st.session_state.step = "saved"
+    
+    if st.button("⬅️ Back to Home"):
+        st.session_state.step = 0
 
 # ---------- STEP 1.5: POST SAVE OPTIONS ----------
 elif st.session_state.step == "saved":
