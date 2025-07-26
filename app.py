@@ -155,7 +155,7 @@ elif st.session_state.step == 6:
         import matplotlib.dates as mdates
 
         df = pd.read_csv(DATA_FILE)
-        df["Date"] = pd.to_datetime(df["Month"] + " " + df["Year"].astype(str))
+        df["Date"] = pd.to_datetime(df["Year"].astype(str) + "-" + df["Month"] + "-01", format="%Y-%B-%d")
         df = df.sort_values("Date", ascending=True).tail(st.session_state.report_range)
 
         st.write(df[["Month", "Year", "DAU", "MAU", "Churn", "Insights"]])
