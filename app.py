@@ -11,9 +11,8 @@ from reportlab.platypus import Table, TableStyle
 from reportlab.lib import colors
 # ----------PDF function -----------
 def generate_pdf(df, fig, title="KPI Report"):
-    # Remove any unwanted columns like "Churn"
-    if "Churn" in df.columns:
-        df = df.drop(columns=["Churn"])
+    # 🔥 Remove any column containing "churn" (case-insensitive)
+    df = df[[col for col in df.columns if "churn" not in col.lower()]]
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
@@ -23,29 +22,38 @@ def generate_pdf(df, fig, title="KPI Report"):
     elements.append(Paragraph(title, styles['Title']))
     elements.append(Spacer(1, 0.25 * inch))
 
-    # Save Matplotlib chart to image buffer
+    # 📊 Add chart
     img_buffer = BytesIO()
     fig.savefig(img_buffer, format='PNG', bbox_inches='tight')
     img_buffer.seek(0)
-    elements.append(RLImage(img_buffer, width=6*inch, height=3*inch))
+    elements.append(RLImage(img_buffer, width=6 * inch, height=3 * inch))
     elements.append(Spacer(1, 0.5 * inch))
 
-    # Add table heading
+    # 📋 Add table heading
     elements.append(Paragraph("<b>Data Table</b>", styles['Heading2']))
     elements.append(Spacer(1, 0.1 * inch))
 
-    # Convert DataFrame to a list of lists
+    # 📑 Prepare table data
     table_data = [df.columns.tolist()] + df.astype(str).values.tolist()
 
-    # Dynamically calculate column widths to fit within page
-    usable_width = A4[0] - 2 * inch  # Account for 1-inch margins
-    num_cols = len(df.columns)
-    col_widths = [usable_width / num_cols] * num_cols
+    # 📏 Auto-adjust column widths
+    usable_width = A4[0] - 2 * inch
+    col_widths = []
+    for col in df.columns:
+        if "insight" in col.lower():
+            col_widths.append(2.4 * inch)
+        elif "mrr" in col.lower() or "avg" in col.lower():
+            col_widths.append(1.2 * inch)
+        else:
+            col_widths.append(None)
 
-    # Create table with fixed widths
+    fixed = sum([w for w in col_widths if w is not None])
+    remaining_cols = col_widths.count(None)
+    auto_width = (usable_width - fixed) / remaining_cols if remaining_cols > 0 else 1
+    col_widths = [w if w is not None else auto_width for w in col_widths]
+
+    # 🧾 Build the table
     report_table = Table(table_data, colWidths=col_widths, hAlign='LEFT')
-
-    # Add styling
     report_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -57,10 +65,10 @@ def generate_pdf(df, fig, title="KPI Report"):
     ]))
 
     elements.append(report_table)
-
     doc.build(elements)
     buffer.seek(0)
     return buffer
+
 
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Prod-Pop!", page_icon="✨")
