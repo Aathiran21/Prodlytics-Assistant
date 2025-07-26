@@ -151,56 +151,66 @@ elif st.session_state.step == 6:
     st.subheader(f"📈 KPI Trends – Last {st.session_state.report_range} Months")
 
     if os.path.exists(DATA_FILE):
+        import matplotlib.pyplot as plt
+        import matplotlib.dates as mdates
+
         df = pd.read_csv(DATA_FILE)
         df["Date"] = pd.to_datetime(df["Month"] + " " + df["Year"].astype(str))
         df = df.sort_values("Date", ascending=True).tail(st.session_state.report_range)
 
         st.write(df[["Month", "Year", "DAU", "MAU", "Churn", "Insights"]])
 
-        import matplotlib.pyplot as plt
         df_plot = df.set_index("Date")[["DAU", "MAU", "Churn"]]
         fig, ax = plt.subplots(figsize=(10, 5))
 
         if st.session_state.report_range == 3:
             df_plot.plot(kind="bar", ax=ax, color=["blue", "orange", "purple"], width=0.6)
             ax.set_title("📊 KPI Trends – Last 3 Months")
+
+            # Add bar labels
+            for container in ax.containers:
+                ax.bar_label(container, fontsize=8, label_type='edge', padding=3)
+
         else:
             df_plot.plot(kind="line", ax=ax, marker='o', color=["blue", "orange", "purple"])
             ax.set_title(f"📈 KPI Trends – Last {st.session_state.report_range} Months")
 
+            # Add point labels
+            for line in ax.get_lines():
+                for x, y in zip(line.get_xdata(), line.get_ydata()):
+                    ax.annotate(f"{int(y)}", xy=(x, y), textcoords="offset points", xytext=(0, 8),
+                                ha='center', fontsize=8)
+
         ax.set_ylabel("Values")
         ax.set_xlabel("Date")
         ax.legend(title="Metrics")
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))  # Format like Jan 2025
         plt.xticks(rotation=45)
         plt.tight_layout()
         st.pyplot(fig)
 
-        # 💡 Button layout starts here
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            with st.container():
-                st.download_button(
-                    "⬇️ Download CSV",
-                    data=df.to_csv(index=False),
-                    file_name=f"kpi_report_last_{st.session_state.report_range}_months.csv",
-                    mime="text/csv"
-                )
+            st.download_button(
+                "⬇️ Download CSV",
+                data=df.to_csv(index=False),
+                file_name=f"kpi_report_last_{st.session_state.report_range}_months.csv",
+                mime="text/csv"
+            )
 
         with col2:
-            with st.container():
-                pdf_file = generate_pdf(df, fig, title=f"KPI Report – Last {st.session_state.report_range} Months")
-                st.download_button(
-                    label="⬇️ Download PDF",
-                    data=pdf_file,
-                    file_name=f"kpi_report_last_{st.session_state.report_range}_months.pdf",
-                    mime="application/pdf"
-                )
+            pdf_file = generate_pdf(df, fig, title=f"KPI Report – Last {st.session_state.report_range} Months")
+            st.download_button(
+                label="⬇️ Download PDF",
+                data=pdf_file,
+                file_name=f"kpi_report_last_{st.session_state.report_range}_months.pdf",
+                mime="application/pdf"
+            )
 
         with col3:
-            with st.container():
-                if st.button("⬅️ Back to Reports"):
-                    st.session_state.step = 5
+            if st.button("⬅️ Back to Reports"):
+                st.session_state.step = 5
 
     else:
         st.warning("⚠️ No KPI data found. Please log some data first.")
