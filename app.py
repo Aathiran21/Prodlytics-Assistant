@@ -63,8 +63,6 @@ def save_data(Month, Year, DAU, MAU, Avg_MRR_Per_Person, Insights):
 
 # ---------- STEP 0: WELCOME ----------
 if st.session_state.step == 0:
-    st.markdown("<h1 style='text-align: center;'>✨ Prod-Pop!</h1>", unsafe_allow_html=True)
-
     st.markdown("""
         <h1 style='text-align: center;'>✨ Welcome to Prod POP! ✨</h1>
 
