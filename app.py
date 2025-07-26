@@ -7,7 +7,8 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image as RL
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
-
+from reportlab.platypus import Table, TableStyle
+from reportlab.lib import colors
 # ----------PDF function -----------
 def generate_pdf(df, fig, title="KPI Report"):
     buffer = BytesIO()
@@ -25,11 +26,28 @@ def generate_pdf(df, fig, title="KPI Report"):
     elements.append(RLImage(img_buffer, width=6*inch, height=3*inch))
     elements.append(Spacer(1, 0.5 * inch))
 
-    # Add table data
-    text_data = df.to_string(index=False)
+    # Add table heading
     elements.append(Paragraph("<b>Data Table</b>", styles['Heading2']))
-    for line in text_data.split("\n"):
-        elements.append(Paragraph(line.replace("  ", "&nbsp;&nbsp;&nbsp;&nbsp;"), styles['Code']))
+    elements.append(Spacer(1, 0.1 * inch))
+
+    # Convert DataFrame to a list of lists
+    table_data = [df.columns.tolist()] + df.astype(str).values.tolist()
+
+    # Create table
+    report_table = Table(table_data, hAlign='LEFT')
+
+    # Add styling
+    report_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.whitesmoke, colors.lightgrey])
+    ]))
+
+    elements.append(report_table)
 
     doc.build(elements)
     buffer.seek(0)
@@ -67,7 +85,7 @@ if st.session_state.step == 0:
         <h1 style='text-align: center; color: mediumslateblue;'>✨ Welcome to Prod POP! ✨</h1>
 
         <p style='text-align: center; font-size: 16px; color: deeppink;'>
-        Hi there! I’m <strong>Clarity</strong>, your friendly product analytics assistant.<br>
+        Hey there! I’m <strong>Clarity</strong>, your friendly prod-lytics assistant.<br>
         Together, we’ll track your KPIs, uncover insights, and bring clarity to your product’s growth journey – one month at a time. 📈
         </p>
 
