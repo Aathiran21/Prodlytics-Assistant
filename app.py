@@ -175,7 +175,9 @@ elif st.session_state.step == 6:
         plt.tight_layout()
         st.pyplot(fig)
 
-        col1, col2 = st.columns(2)
+        # ✅ Aligned buttons in one row
+        col1, col2, col3 = st.columns([1, 1, 1])
+
         with col1:
             st.download_button(
                 "⬇️ Download CSV",
@@ -184,6 +186,7 @@ elif st.session_state.step == 6:
                 mime="text/csv"
             )
 
+        with col2:
             pdf_file = generate_pdf(df, fig, title=f"KPI Report – Last {st.session_state.report_range} Months")
             st.download_button(
                 label="⬇️ Download PDF",
@@ -191,7 +194,8 @@ elif st.session_state.step == 6:
                 file_name=f"kpi_report_last_{st.session_state.report_range}_months.pdf",
                 mime="application/pdf"
             )
-        with col2:
+
+        with col3:
             if st.button("⬅️ Back to Reports"):
                 st.session_state.step = 5
 
