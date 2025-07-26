@@ -228,8 +228,6 @@ elif st.session_state.step == 6:
         expected_columns = ["Date", "Month", "Year", "DAU", "MAU", "Avg_MRR_Per_Person", "Insights"]
         df = df[[col for col in expected_columns if col in df.columns]]
 
-        st.write(df)  # This now shows the correct column order
-
         # Add MonthYearStr for chart display only
         df["MonthYearStr"] = df["Date"].dt.strftime('%b %Y')
         df_plot = df.set_index("MonthYearStr")[["DAU", "MAU", "Avg_MRR_Per_Person"]]
