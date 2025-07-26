@@ -221,6 +221,20 @@ elif st.session_state.step == 6:
         df["Date"] = pd.to_datetime(df["Year"].astype(str) + "-" + df["Month"] + "-01", format="%Y-%B-%d")
         df = df.sort_values("Date", ascending=True).tail(st.session_state.report_range)
 
+        # ✅ Clean and reorder for PDF and CSV export (Indented correctly)
+        if "MonthYearStr" in df.columns:
+            df = df.drop(columns=["MonthYearStr"])
+
+        expected_columns = ["Date", "Month", "Year", "DAU", "MAU", "Avg_MRR_Per_Person", "Insights"]
+        df = df[[col for col in expected_columns if col in df.columns]]
+
+        st.write(df)  # This now shows the correct column order
+
+        # Add MonthYearStr for chart display only
+        df["MonthYearStr"] = df["Date"].dt.strftime('%b %Y')
+        df_plot = df.set_index("MonthYearStr")[["DAU", "MAU", "Avg_MRR_Per_Person"]]
+
+
         st.write(df[["Month", "Year", "DAU", "MAU", "Avg_MRR_Per_Person", "Insights"]])
 
         # Format x-axis as "Jan 2025"
