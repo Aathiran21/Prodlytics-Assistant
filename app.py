@@ -45,13 +45,13 @@ if "step" not in st.session_state:
     st.session_state.kpi_data = {}
 
 # ---------- SAVE FUNCTION ----------
-def save_data(Month, Year, DAU, MAU, Churn, Insights):
+def save_data(Month, Year, DAU, MAU, Avg_MRR_Per_Person, Insights):
     new_row = {
         "Month": Month,
         "Year": Year,
         "DAU": DAU,
         "MAU": MAU,
-        "Churn": Churn,
+        "Avg_MRR_Per_Person": Avg_MRR_Per_Person,
         "Insights": Insights
     }
     try:
@@ -86,11 +86,11 @@ elif st.session_state.step == 1:
     year = st.number_input("📅 Enter Year", min_value=2000, max_value=datetime.now().year, value=datetime.now().year)
     DAU = st.number_input("👥 DAU (Daily Active Users)", min_value=0)
     MAU = st.number_input("👥 MAU (Monthly Active Users)", min_value=0)
-    Churn = st.number_input("📉 Churn Rate (%)", min_value=0.0)
+    Avg_MRR_Per_Person = st.number_input("💰 Avg MRR per Person (₹)", min_value=0.0)
     Insights = st.text_area("🧠 Monthly Insights", placeholder="What was this month like?")
 
     if st.button("💾 Save Data"):
-        save_data(month, year, DAU, MAU, Churn, Insights)
+        save_data(month, year, DAU, MAU, Avg_MRR_Per_Person, Insights)
         st.success(f"✅ Saved data for {month} {year}")
         st.session_state.last_saved_month = month
         st.session_state.last_saved_year = year
@@ -115,10 +115,10 @@ elif st.session_state.step == 2:
     st.subheader(f"📄 Report for {st.session_state.last_saved_month} {st.session_state.last_saved_year}")
     df = pd.read_csv(DATA_FILE)
     summary = df[(df["Month"] == st.session_state.last_saved_month) & (df["Year"] == st.session_state.last_saved_year)]
-    st.write(summary[["DAU", "MAU", "Churn"]])
+    st.write(summary[["DAU", "MAU", "Avg_MRR_Per_Person"]])
     st.info(summary["Insights"].values[0] if summary["Insights"].values[0] else "_No insights provided._")
 
-    st.bar_chart(summary[["DAU", "MAU", "Churn"]].T)
+    st.bar_chart(summary[["DAU", "MAU", "Avg_MRR_Per_Person"]].T)
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -157,11 +157,11 @@ elif st.session_state.step == 6:
         df["Date"] = pd.to_datetime(df["Year"].astype(str) + "-" + df["Month"] + "-01", format="%Y-%B-%d")
         df = df.sort_values("Date", ascending=True).tail(st.session_state.report_range)
 
-        st.write(df[["Month", "Year", "DAU", "MAU", "Churn", "Insights"]])
+        st.write(df[["Month", "Year", "DAU", "MAU", "Avg_MRR_Per_Person", "Insights"]])
 
         # Format x-axis as "Jan 2025"
         df["MonthYearStr"] = df["Date"].dt.strftime('%b %Y')
-        df_plot = df.set_index("MonthYearStr")[["DAU", "MAU", "Churn"]]
+        df_plot = df.set_index("MonthYearStr")[["DAU", "MAU", "Avg_MRR_Per_Person"]]
 
         fig, ax = plt.subplots(figsize=(10, 5))
 
