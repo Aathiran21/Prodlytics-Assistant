@@ -11,6 +11,9 @@ from reportlab.platypus import Table, TableStyle
 from reportlab.lib import colors
 # ----------PDF function -----------
 def generate_pdf(df, fig, title="KPI Report"):
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.platypus import Paragraph
+
     # 🔥 Remove any column containing "churn" (case-insensitive)
     df = df[[col for col in df.columns if "churn" not in col.lower()]]
 
@@ -34,17 +37,15 @@ def generate_pdf(df, fig, title="KPI Report"):
     elements.append(Spacer(1, 0.1 * inch))
 
     # 📑 Prepare table data
-    from reportlab.lib.styles import ParagraphStyle
+    para_style = ParagraphStyle(name='TableCell', fontSize=8, leading=10)
 
-# Use a small paragraph style for table cells
-para_style = ParagraphStyle(name='TableCell', fontSize=8, leading=10)
+    # Header row
+    table_data = [[Paragraph(str(cell), para_style) for cell in df.columns.tolist()]]
 
-# Wrap all cells as Paragraphs to enable text wrapping
-table_data = [df.columns.tolist()]
-for row in df.astype(str).values.tolist():
-    wrapped_row = [Paragraph(cell, para_style) for cell in row]
-    table_data.append(wrapped_row)
-
+    # Data rows with wrapped text
+    for row in df.astype(str).values.tolist():
+        wrapped_row = [Paragraph(cell, para_style) for cell in row]
+        table_data.append(wrapped_row)
 
     # 📏 Auto-adjust column widths
     usable_width = A4[0] - 2 * inch
@@ -78,7 +79,6 @@ for row in df.astype(str).values.tolist():
     doc.build(elements)
     buffer.seek(0)
     return buffer
-
 
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Prod-Pop!", page_icon="✨")
