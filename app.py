@@ -2,6 +2,38 @@ import streamlit as st
 import pandas as pd
 import os
 from datetime import datetime
+from io import BytesIO
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image as RLImage
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import inch
+
+# ----------PDF function -----------
+def generate_pdf(df, fig, title="KPI Report"):
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    elements.append(Paragraph(title, styles['Title']))
+    elements.append(Spacer(1, 0.25 * inch))
+
+    # Save Matplotlib chart to image buffer
+    img_buffer = BytesIO()
+    fig.savefig(img_buffer, format='PNG', bbox_inches='tight')
+    img_buffer.seek(0)
+    elements.append(RLImage(img_buffer, width=6*inch, height=3*inch))
+    elements.append(Spacer(1, 0.5 * inch))
+
+    # Add table data
+    text_data = df.to_string(index=False)
+    elements.append(Paragraph("<b>Data Table</b>", styles['Heading2']))
+    for line in text_data.split("\n"):
+        elements.append(Paragraph(line.replace("  ", "&nbsp;&nbsp;&nbsp;&nbsp;"), styles['Code']))
+
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
 
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Prod-Pop!", page_icon="✨")
@@ -125,24 +157,44 @@ elif st.session_state.step == 6:
 
         st.write(df[["Month", "Year", "DAU", "MAU", "Churn", "Insights"]])
 
-        import matplotlib.pyplot as plt  # <- fixed position
-
-        # Plot using custom colors
-        fig, ax = plt.subplots(figsize=(10, 4))
+        import matplotlib.pyplot as plt
         df_plot = df.set_index("Date")[["DAU", "MAU", "Churn"]]
-        df_plot.plot(kind='bar', ax=ax, color=["blue", "purple", "orange"])
-        ax.set_title(f"KPI Trends – Last {st.session_state.report_range} Months")
+        fig, ax = plt.subplots(figsize=(10, 5))
+
+        if st.session_state.report_range == 3:
+            df_plot.plot(kind="bar", ax=ax, color=["blue", "orange", "purple"], width=0.6)
+            ax.set_title("📊 KPI Trends – Last 3 Months")
+        else:
+            df_plot.plot(kind="line", ax=ax, marker='o', color=["blue", "orange", "purple"])
+            ax.set_title(f"📈 KPI Trends – Last {st.session_state.report_range} Months")
+
         ax.set_ylabel("Values")
         ax.set_xlabel("Date")
+        ax.legend(title="Metrics")
         plt.xticks(rotation=45)
+        plt.tight_layout()
         st.pyplot(fig)
 
         col1, col2 = st.columns(2)
         with col1:
-            st.download_button("⬇️ Download Report", data=df.to_csv(index=False), file_name=f"kpi_report_last_{st.session_state.report_range}_months.csv")
+            st.download_button(
+                "⬇️ Download CSV",
+                data=df.to_csv(index=False),
+                file_name=f"kpi_report_last_{st.session_state.report_range}_months.csv",
+                mime="text/csv"
+            )
+
+            pdf_file = generate_pdf(df, fig, title=f"KPI Report – Last {st.session_state.report_range} Months")
+            st.download_button(
+                label="⬇️ Download PDF",
+                data=pdf_file,
+                file_name=f"kpi_report_last_{st.session_state.report_range}_months.pdf",
+                mime="application/pdf"
+            )
         with col2:
             if st.button("⬅️ Back to Reports"):
                 st.session_state.step = 5
+
     else:
         st.warning("⚠️ No KPI data found. Please log some data first.")
         if st.button("⬅️ Back to Home"):
