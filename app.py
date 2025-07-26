@@ -11,6 +11,10 @@ from reportlab.platypus import Table, TableStyle
 from reportlab.lib import colors
 # ----------PDF function -----------
 def generate_pdf(df, fig, title="KPI Report"):
+    # Remove any unwanted columns like "Churn"
+    if "Churn" in df.columns:
+        df = df.drop(columns=["Churn"])
+
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     styles = getSampleStyleSheet()
@@ -33,8 +37,13 @@ def generate_pdf(df, fig, title="KPI Report"):
     # Convert DataFrame to a list of lists
     table_data = [df.columns.tolist()] + df.astype(str).values.tolist()
 
-    # Create table
-    report_table = Table(table_data, hAlign='LEFT')
+    # Dynamically calculate column widths to fit within page
+    usable_width = A4[0] - 2 * inch  # Account for 1-inch margins
+    num_cols = len(df.columns)
+    col_widths = [usable_width / num_cols] * num_cols
+
+    # Create table with fixed widths
+    report_table = Table(table_data, colWidths=col_widths, hAlign='LEFT')
 
     # Add styling
     report_table.setStyle(TableStyle([
