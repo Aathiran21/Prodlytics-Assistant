@@ -202,8 +202,7 @@ with col3:
     with st.container():
         if st.button("⬅️ Back to Reports"):
             st.session_state.step = 5
-
-    else:
+else:
         st.warning("⚠️ No KPI data found. Please log some data first.")
         if st.button("⬅️ Back to Home"):
             st.session_state.step = 0
