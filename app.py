@@ -160,7 +160,9 @@ elif st.session_state.step == 6:
 
         st.write(df[["Month", "Year", "DAU", "MAU", "Churn", "Insights"]])
 
-        df_plot = df.set_index("Date")[["DAU", "MAU", "Churn"]]
+        df["MonthYearStr"] = df["Date"].dt.strftime('%b %Y')  # e.g., Jan 2025
+        df_plot = df.set_index("MonthYearStr")[["DAU", "MAU", "Churn"]]
+
         fig, ax = plt.subplots(figsize=(10, 5))
 
         if st.session_state.report_range == 3:
