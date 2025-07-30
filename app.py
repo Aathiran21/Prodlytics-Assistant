@@ -214,85 +214,83 @@ elif st.session_state.step == 5:
 elif st.session_state.step == 6:
     st.subheader(f"KPI Trends – Last {st.session_state.report_range} Months")
 
-    if os.path.exists(DATA_FILE):
-        import matplotlib.pyplot as plt
-
-        df = pd.read_csv(DATA_FILE)
-        df["Date"] = pd.to_datetime(df["Year"].astype(str) + "-" + df["Month"] + "-01", format="%Y-%B-%d")
-        df = df.sort_values("Date", ascending=True).tail(st.session_state.report_range)
-
-        # ✅ Clean and reorder for PDF and CSV export (Indented correctly)
-        if "MonthYearStr" in df.columns:
-            df = df.drop(columns=["MonthYearStr"])
-
-        expected_columns = ["Date", "Month", "Year", "DAU", "MAU", "Avg_MRR_Per_Person", "Insights"]
-        df = df[[col for col in expected_columns if col in df.columns]]
-
-        # Add MonthYearStr for chart display only
-        df["MonthYearStr"] = df["Date"].dt.strftime('%b %Y')
-        df_plot = df.set_index("MonthYearStr")[["DAU", "MAU", "Avg_MRR_Per_Person"]]
-
-
-        st.write(df[["Month", "Year", "DAU", "MAU", "Avg_MRR_Per_Person", "Insights"]])
-
-        # Format x-axis as "Jan 2025"
-        df["MonthYearStr"] = df["Date"].dt.strftime('%b %Y')
-        df_plot = df.set_index("MonthYearStr")[["DAU", "MAU", "Avg_MRR_Per_Person"]]
-
-        fig, ax = plt.subplots(figsize=(10, 5))
-
-        if st.session_state.report_range == 3:
-            df_plot.plot(kind="bar", ax=ax, color=["blue", "orange", "purple"], width=0.6)
-            ax.set_title("KPI Trends – Last 3 Months")
-
-            # Add bar labels
-            for container in ax.containers:
-                ax.bar_label(container, fontsize=8, label_type='edge', padding=3)
-        else:
-            df_plot.plot(kind="line", ax=ax, marker='o', color=["blue", "orange", "purple"])
-            ax.set_title(f"KPI Trends – Last {st.session_state.report_range} Months")
-
-            # Add point labels
-            for line in ax.get_lines():
-                for x, y in zip(line.get_xdata(), line.get_ydata()):
-                    ax.annotate(f"{int(y)}", xy=(x, y), textcoords="offset points", xytext=(0, 8),
-                                ha='center', fontsize=8)
-
-        ax.set_ylabel("Values")
-        ax.set_xlabel("Month")
-        ax.legend(title="Metrics")
-        plt.xticks(rotation=45)
-        plt.tight_layout()
-        st.pyplot(fig)
-
-        # Buttons
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            st.download_button(
-                "⬇️ Download CSV",
-                data=df.to_csv(index=False),
-                file_name=f"kpi_report_last_{st.session_state.report_range}_months.csv",
-                mime="text/csv"
-            )
-
-        with col2:
-            pdf_file = generate_pdf(df, fig, title=f"KPI Report – Last {st.session_state.report_range} Months")
-            st.download_button(
-                label="⬇️ Download PDF",
-                data=pdf_file,
-                file_name=f"kpi_report_last_{st.session_state.report_range}_months.pdf",
-                mime="application/pdf"
-            )
-
-        with col3:
-            if st.button("⬅️ Back to Reports"):
-                st.session_state.step = 5
-
-    else:
+    if not os.path.exists(DATA_FILE):
         st.warning("⚠️ No KPI data found. Please log some data first.")
         if st.button("⬅️ Back to Home"):
             st.session_state.step = 0
+
+    else:
+        import matplotlib.pyplot as plt
+        df = pd.read_csv(DATA_FILE)
+
+        if df.empty:
+            st.warning("⚠️ No KPI data saved yet. Please log some data first.")
+            if st.button("⬅️ Back to Home"):
+                st.session_state.step = 0
+        else:
+            df["Date"] = pd.to_datetime(df["Year"].astype(str) + "-" + df["Month"] + "-01", format="%Y-%B-%d")
+            df = df.sort_values("Date", ascending=True).tail(st.session_state.report_range)
+
+            # ✅ Clean and reorder
+            if "MonthYearStr" in df.columns:
+                df = df.drop(columns=["MonthYearStr"])
+
+            expected_columns = ["Date", "Month", "Year", "DAU", "MAU", "Avg_MRR_Per_Person", "Insights"]
+            df = df[[col for col in expected_columns if col in df.columns]]
+
+            df["MonthYearStr"] = df["Date"].dt.strftime('%b %Y')
+            df_plot = df.set_index("MonthYearStr")[["DAU", "MAU", "Avg_MRR_Per_Person"]]
+
+            st.write(df[["Month", "Year", "DAU", "MAU", "Avg_MRR_Per_Person", "Insights"]])
+
+            # Check for numeric data
+            if not df_plot.empty and not df_plot.select_dtypes(include='number').empty:
+                fig, ax = plt.subplots(figsize=(10, 5))
+
+                if st.session_state.report_range == 3:
+                    df_plot.plot(kind="bar", ax=ax, color=["blue", "orange", "purple"], width=0.6)
+                    ax.set_title("KPI Trends – Last 3 Months")
+                    for container in ax.containers:
+                        ax.bar_label(container, fontsize=8, label_type='edge', padding=3)
+                else:
+                    df_plot.plot(kind="line", ax=ax, marker='o', color=["blue", "orange", "purple"])
+                    ax.set_title(f"KPI Trends – Last {st.session_state.report_range} Months")
+                    for line in ax.get_lines():
+                        for x, y in zip(line.get_xdata(), line.get_ydata()):
+                            ax.annotate(f"{int(y)}", xy=(x, y), textcoords="offset points", xytext=(0, 8),
+                                        ha='center', fontsize=8)
+
+                ax.set_ylabel("Values")
+                ax.set_xlabel("Month")
+                ax.legend(title="Metrics")
+                plt.xticks(rotation=45)
+                plt.tight_layout()
+                st.pyplot(fig)
+
+                # Buttons
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.download_button(
+                        "⬇️ Download CSV",
+                        data=df.to_csv(index=False),
+                        file_name=f"kpi_report_last_{st.session_state.report_range}_months.csv",
+                        mime="text/csv"
+                    )
+                with col2:
+                    pdf_file = generate_pdf(df, fig, title=f"KPI Report – Last {st.session_state.report_range} Months")
+                    st.download_button(
+                        label="⬇️ Download PDF",
+                        data=pdf_file,
+                        file_name=f"kpi_report_last_{st.session_state.report_range}_months.pdf",
+                        mime="application/pdf"
+                    )
+                with col3:
+                    if st.button("⬅️ Back to Reports"):
+                        st.session_state.step = 5
+            else:
+                st.warning("⚠️ Not enough numeric data to generate a chart. Please make sure DAU, MAU, and MRR are entered.")
+                if st.button("⬅️ Back to Reports"):
+                    st.session_state.step = 5
 
 
 # ---------- STEP 7: DELETE A SPECIFIC MONTH ----------
