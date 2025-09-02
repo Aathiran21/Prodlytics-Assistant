@@ -14,14 +14,14 @@ def generate_pdf(df, fig, title="KPI Report"):
     from reportlab.lib.styles import ParagraphStyle
     from reportlab.platypus import Paragraph
 
-    # 🔥 Remove any column containing "churn" (case-insensitive)
+    # Remove any column containing "churn" (case-insensitive)
     df = df[[col for col in df.columns if "churn" not in col.lower()]]
 
-    # ❌ Drop 'MonthYearStr' if it exists
+    #  Drop 'MonthYearStr' if it exists
     if "MonthYearStr" in df.columns:
         df = df.drop(columns=["MonthYearStr"])
 
-    # ✅ Reorder columns
+    #  Reorder columns
     expected_columns = ["Date", "Month", "Year", "DAU", "MAU", "Avg_MRR_Per_Person", "Insights"]
     df = df[[col for col in expected_columns if col in df.columns]]
 
@@ -33,18 +33,18 @@ def generate_pdf(df, fig, title="KPI Report"):
     elements.append(Paragraph(title, styles['Title']))
     elements.append(Spacer(1, 0.25 * inch))
 
-    # 📊 Add chart
+    # Add chart
     img_buffer = BytesIO()
     fig.savefig(img_buffer, format='PNG', bbox_inches='tight')
     img_buffer.seek(0)
     elements.append(RLImage(img_buffer, width=6 * inch, height=3 * inch))
     elements.append(Spacer(1, 0.5 * inch))
 
-    # 📋 Table heading
+    # Table heading
     elements.append(Paragraph("<b>Data Table</b>", styles['Heading2']))
     elements.append(Spacer(1, 0.1 * inch))
 
-    # 🧾 Table style and wrap
+    # Table style and wrap
     para_style = ParagraphStyle(name='TableCell', fontSize=8, leading=10)
 
     # Header
@@ -55,7 +55,7 @@ def generate_pdf(df, fig, title="KPI Report"):
         wrapped_row = [Paragraph(cell, para_style) for cell in row]
         table_data.append(wrapped_row)
 
-    # 📏 Dynamic widths
+    # Dynamic widths
     usable_width = A4[0] - 2 * inch
     col_widths = []
     for col in df.columns:
@@ -71,7 +71,7 @@ def generate_pdf(df, fig, title="KPI Report"):
     auto_width = (usable_width - fixed) / remaining_cols if remaining_cols > 0 else 1
     col_widths = [w if w is not None else auto_width for w in col_widths]
 
-    # 📄 Build the table
+    # Build the table
     report_table = Table(table_data, colWidths=col_widths, hAlign='LEFT')
     report_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
@@ -231,7 +231,7 @@ elif st.session_state.step == 6:
             df["Date"] = pd.to_datetime(df["Year"].astype(str) + "-" + df["Month"] + "-01", format="%Y-%B-%d")
             df = df.sort_values("Date", ascending=True).tail(st.session_state.report_range)
 
-            # ✅ Clean and reorder
+            #  Clean and reorder
             if "MonthYearStr" in df.columns:
                 df = df.drop(columns=["MonthYearStr"])
 
